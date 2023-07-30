@@ -10,13 +10,20 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage> {
+class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
   final SearchController searchController = SearchController();
 
   final TextEditingController controller = TextEditingController();
-
+  bool keyboardOpen = false;
+  List<String> lista = [
+    "Banana",
+    "Laranja",
+    "Peixe",
+    "Melancia",
+  ];
   @override
   Widget build(BuildContext context) {
+    keyboardOpen = MediaQuery.of(context).viewInsets.bottom != 0;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Padding(
@@ -60,46 +67,60 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    SearchAnchor(
+                    SearchAnchor.bar(
+                      viewBackgroundColor: AppColors.backgroundLight,
+                      isFullScreen: false,
+                      barHintStyle: const MaterialStatePropertyAll(
+                        TextStyle(color: Colors.white),
+                      ),
+                      barBackgroundColor: const MaterialStatePropertyAll(
+                          AppColors.backgroundLight),
+                      barTextStyle: const MaterialStatePropertyAll(
+                        TextStyle(color: Colors.white),
+                      ),
+                      barShape: const MaterialStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(8),
+                          ),
+                        ),
+                      ),
+                      barLeading: IconButton(
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                        },
+                      ),
+                      viewLeading: IconButton(
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          searchController.closeView(null);
+                          FocusScope.of(context).unfocus();
+                        },
+                      ),
+                      viewHeaderTextStyle: const TextStyle(color: Colors.white),
                       searchController: searchController,
-                      builder: (context, controller) {
-                        return SearchBar(
-                          controller: controller,
-                          backgroundColor: const MaterialStatePropertyAll(
-                            AppColors.backgroundLight,
-                          ),
-                          elevation: const MaterialStatePropertyAll(0),
-                          shape: const MaterialStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(8),
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) {
-                            controller.openView();
-                          },
-                          hintText: 'Buscar local',
-                          hintStyle: MaterialStatePropertyAll(
-                            GoogleFonts.nunito(
-                              color: const Color(0xffBFBFD4),
-                            ),
-                          ),
-                          textStyle: MaterialStatePropertyAll(
-                            GoogleFonts.nunito(
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      },
                       suggestionsBuilder: (context, controller) {
-                        return List<ListTile>.generate(5, (int index) {
-                          final String item = 'item $index';
+                        List<String> listFilter = lista
+                            .where(
+                                (element) => element.contains(controller.text))
+                            .toList();
+                        return List<ListTile>.generate(listFilter.length,
+                            (int index) {
                           return ListTile(
-                            title: Text(controller.text),
+                            title: Text(
+                              listFilter[index],
+                              style: TextStyle(color: Colors.white),
+                            ),
                             onTap: () {
                               setState(() {
-                                controller.closeView(item);
+                                controller.closeView(listFilter[index]);
                               });
                             },
                           );
